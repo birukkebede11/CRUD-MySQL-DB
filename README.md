@@ -35,4 +35,4 @@ I suggest to run the sever with nodemon
 nodemon crudDB.js
 ```
 
-- Make sure to insert your own credentials for MySql connection
+## Make sure to insert your own credentials for MySql connection
