@@ -1,6 +1,7 @@
 const express = require("express");
 const mysql = require("mysql");
 const app = express();
+const cors = require("cors");
 
 // Middle ware to extract info from the html
 app.use(
@@ -8,9 +9,10 @@ app.use(
 		extended: true,
 	})
 );
-// app.use(express.json());
 
-app.use(express.static("./crud"));
+// Middle ware to have access to the frontend
+app.use(cors());
+app.use(express.json());
 
 // User account info
 const connection = mysql.createConnection({
@@ -28,7 +30,7 @@ connection.connect((err) => {
 });
 
 // Route: / => Homepage route
-app.get("/", (req, res) => res.send("Up and running"));
+app.get("/", (req, res) => res.send("Up and running..."));
 
 // Route: /create-table => To create the tables
 app.get("/create-table", (req, res) => {
@@ -58,7 +60,7 @@ app.get("/create-table", (req, res) => {
 
 // Route: /insert-customers-info => To insert data to the tables
 app.post("/insert-customers-info", (req, res) => {
-	// // Putting Query on a variable
+	// // Putting Query on a variable Manually
 	// let insertName = "INSERT INTO customers (name) VALUES ('Abebe')";
 	// let insertAddress =
 	// 	"INSERT INTO address (customer_id,address) VALUES (1, 'MD, USA')";
@@ -83,11 +85,13 @@ app.post("/insert-customers-info", (req, res) => {
 	// // /////////////////////////////////////////////////////////////
 	// ////////////////////////////////////////////////////////////////////////////
 
-	console.table(req.body);
+	// console.table(req.body);
 
-	let name = req.body.name;
-	let address = req.body.address;
-	let company = req.body.company;
+	// let name = req.body.name;
+	// let address = req.body.address;
+	// let company = req.body.company;
+
+	const { name, address, company } = req.body;
 
 	// with out template literals
 	// let insertName = "INSERT INTO customers (name) VALUES ('" + name + "')";
@@ -104,12 +108,12 @@ app.post("/insert-customers-info", (req, res) => {
 		`SELECT * FROM customers WHERE name = "${name}"`,
 		(err, rows, fields) => {
 			// Extracting Foreign key
-			console.log("rows ==> ", rows);
-			console.log("rows[0] ==> ", rows[0]);
+			// console.log("rows ==> ", rows);
+			// console.log("rows[0] ==> ", rows[0]);
 
 			let nameAdded_id = rows[0].customer_id;
 
-			console.log("rows[0].customer_id ==> ", nameAdded_id);
+			// console.log("rows[0].customer_id ==> ", nameAdded_id);
 
 			let insertAddress = `INSERT INTO address (customer_id,address) VALUES ("${nameAdded_id}", "${address}")`;
 
@@ -154,23 +158,63 @@ app.get("/customers", (req, res) => {
 	);
 });
 
-// Route: /customers/:id => To retrieve single data from the tables using id
+// The right way of displaying a single user
+// // Route: /customers/:id => To retrieve single data from the tables using id
 app.get("/customers/:id", (req, res) => {
-	console.log("ID from params",req.params.id);
+	// console.log("ID from params", req.params.id);
+
 	connection.query(
-		"SELECT customers.customer_id AS ID,customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
-		(err, results, fields) => {
+		`SELECT customers.customer_id AS ID,customers.name FROM customers WHERE customers.customer_id = ${req.params.id}`,
+		(err, customerResults, fields) => {
 			if (err) console.log("Error During selection", err);
 			// console.log(results);
-			res.send(results[req.params.id-1]?results[req.params.id-1]:"Doesn't exist");
+
+			connection.query(
+				`SELECT address.address FROM address WHERE address.customer_id = ${req.params.id}`,
+				(err, addressResults, fields) => {
+					if (err) console.log("Error During selection", err);
+					// console.log(results);
+					connection.query(
+						`SELECT company.company FROM company WHERE company.customer_id = ${req.params.id}`,
+						(err, companyResults, fields) => {
+							if (err) console.log("Error During selection", err);
+							// console.log(results);
+							res.send({
+								id: customerResults[0]?.ID,
+								name: customerResults[0]?.name,
+								address: addressResults[0]?.address,
+								company: companyResults[0]?.company,
+							});
+						}
+					);
+				}
+			);
 		}
 	);
 });
 
+// // The Lazy & wrong way of displaying a single user
+// // Route: /customers/:id => To retrieve single data from the tables using id
+// app.get("/customers/:id", (req, res) => {
+// 	console.log("ID from params", req.params.id);
+// 	connection.query(
+// 		"SELECT customers.customer_id AS ID,customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
+// 		(err, results, fields) => {
+// 			if (err) console.log("Error During selection", err);
+// 			// console.log(results);
+// 			res.send(
+// 				results[req.params.id - 1]
+// 					? results[req.params.id - 1]
+// 					: "Doesn't exist"
+// 			);
+// 		}
+// 	);
+// });
+
 // Route: /update => To adjust or update data from the tables
-// *Not finished yet => It has to be Dynamic
 app.put("/update", (req, res) => {
-	let updateName = "UPDATE customers SET name = 'Bob' WHERE customer_id = '1'";
+	const { newName, id } = req.body;
+	let updateName = `UPDATE customers SET name = '${newName}' WHERE customer_id = '${id}'`;
 	connection.query(updateName, (err, result) => {
 		if (err) throw err;
 		console.log(result.affectedRows + " record(s) updated");
@@ -178,14 +222,52 @@ app.put("/update", (req, res) => {
 	});
 });
 
-// Route: /remove => To delete data from the tables
-// *Not finished yet => It has to be Dynamic
-app.delete("/remove", (req, res) => {
-	let removeName = "DELETE FROM address WHERE address = 'MD, USA'";
+// // Route: /remove => To delete data from the tables
+// // Manually deleting address
+// // TODO: make it dynamic
+// app.delete("/remove", (req, res) => {
+// 	let removeName = "DELETE FROM address WHERE address = 'MD, USA'";
+// 	connection.query(removeName, (err, result) => {
+// 		if (err) throw err;
+// 		console.log(result.affectedRows + " record(s) Deleted");
+// 		res.send(result);
+// 	});
+// });
+
+// // **** The wrong way to remove user or name ****
+// // Route: /remove-name => To delete data from the tables
+// // Doesn't work (B/c it's used as foreign key on other tables)
+// app.delete("/remove-name", (req, res) => {
+// 	let removeName = "DELETE FROM customers WHERE customer_id = '1'";
+// 	connection.query(removeName, (err, result) => {
+// 		if (err) throw err;
+// 		console.log(result.affectedRows + " record(s) Deleted");
+// 		res.send(result);
+// 	});
+// });
+
+// **** The right way to remove user or name ****
+// Route: /remove-user => To delete all data from the tables
+app.delete("/remove-user", (req, res) => {
+	// console.table(req.body)
+	const { id } = req.body;
+	let removeName = `DELETE FROM customers WHERE customer_id = '${id}'`;
+	let removeAddress = `DELETE FROM address WHERE customer_id = '${id}'`;
+	let removeCompany = `DELETE FROM company WHERE customer_id = '${id}'`;
+
+	connection.query(removeAddress, (err, result) => {
+		if (err) throw err;
+		console.log(result.affectedRows + " record(s) Deleted");
+	});
+
+	connection.query(removeCompany, (err, result) => {
+		if (err) throw err;
+		console.log(result.affectedRows + " record(s) Deleted");
+	});
+
 	connection.query(removeName, (err, result) => {
 		if (err) throw err;
 		console.log(result.affectedRows + " record(s) Deleted");
-		res.send(result);
 	});
 });
 
