@@ -146,6 +146,20 @@ app.get("/customers-detail-info", (req, res) => {
 	);
 });
 
+// // Tilahun's Question => how to have data from one table in an array form
+app.get("/customers-detail-info-one-table", (req, res) => {
+	connection.query("SELECT name FROM customers", (err, results, fields) => {
+		if (err) console.log("Error During selection", err);
+		let x = [];
+
+		for (let i = 0; i < results.length; i++) {
+			const data = results[i].name;
+			x.push(data);
+		}
+		res.send(x);
+	});
+});
+
 // Route: /customers => To retrieve customized data from the tables
 app.get("/customers", (req, res) => {
 	connection.query(
