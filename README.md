@@ -1,6 +1,6 @@
 # CRUD-MySQL-DB
 
-An app that has full fuctionality of create, read, update, and delete. Using MySql relational database.
+An app that has full functionality of create, read, update, and delete. Using MySql relational database.
 
 # Stack
 - Node

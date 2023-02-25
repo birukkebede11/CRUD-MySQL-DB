@@ -1,4 +1,10 @@
-function formSubmit(e) {
+function displayForm(show, hideOne, hideTwo) {
+	document.getElementsByClassName(show)[0].style.display = "block";
+	document.getElementsByClassName(hideOne)[0].style.display = "none";
+	document.getElementsByClassName(hideTwo)[0].style.display = "none";
+}
+
+function editName(e) {
 	e.preventDefault();
 	fetch("http://localhost:1234/update", {
 		method: "PUT",
@@ -9,12 +15,12 @@ function formSubmit(e) {
 		}),
 	})
 		.then((response) => response.json())
-		.then((data) => alert("Name Updated!"));
+		.then(() => alert("Name Updated!"));
 
 	document.getElementById("myForm").reset();
 }
 
-document.getElementById("myForm").addEventListener("submit", formSubmit);
+document.getElementById("myForm").addEventListener("submit", editName);
 
 function deleteUser(e) {
 	e.preventDefault();
@@ -25,7 +31,9 @@ function deleteUser(e) {
 		body: JSON.stringify({
 			id: document.querySelector("#delete-user input[name=id]").value,
 		}),
-	});
+	})
+		.then((response) => response.json())
+		.then(() => alert("User Deleted!"));
 
 	document.getElementById("delete-user").reset();
 }
