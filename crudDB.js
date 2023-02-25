@@ -1,5 +1,5 @@
 const express = require("express");
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const app = express();
 const cors = require("cors");
 
@@ -60,43 +60,8 @@ app.get("/create-table", (req, res) => {
 
 // Route: /insert-customers-info => To insert data to the tables
 app.post("/insert-customers-info", (req, res) => {
-	// // Putting Query on a variable Manually
-	// let insertName = "INSERT INTO customers (name) VALUES ('Abebe')";
-	// let insertAddress =
-	// 	"INSERT INTO address (customer_id,address) VALUES (1, 'MD, USA')";
-	// let insertCompany =
-	// 	"INSERT INTO company (customer_id,company) VALUES (1, 'Amazon')";
-
-	// // Executing the query's we wrote above
-	// connection.query(insertName, (err, result, fields) => {
-	// 	if (err) console.log(`Error Found: ${err}`);
-	// 	console.log("Name inserted Manually");
-	// });
-	// connection.query(insertAddress, (err, result, fields) => {
-	// 	if (err) console.log(`Error Found: ${err}`);
-	// 	console.log("Address inserted Manually");
-
-	// });
-	// connection.query(insertCompany, (err, result, fields) => {
-	// 	if (err) console.log(`Error Found: ${err}`);
-	// 	console.log("company inserted Manually");
-	// });
-
-	// // /////////////////////////////////////////////////////////////
-	// ////////////////////////////////////////////////////////////////////////////
-
-	// console.table(req.body);
-
-	// let name = req.body.name;
-	// let address = req.body.address;
-	// let company = req.body.company;
 
 	const { name, address, company } = req.body;
-
-	// with out template literals
-	// let insertName = "INSERT INTO customers (name) VALUES ('" + name + "')";
-
-	// with Template literals
 	let insertName = `INSERT INTO customers (name) VALUES ('${name}')`;
 
 	// Executing the query we wrote above
@@ -107,13 +72,9 @@ app.post("/insert-customers-info", (req, res) => {
 	connection.query(
 		`SELECT * FROM customers WHERE name = "${name}"`,
 		(err, rows, fields) => {
-			// Extracting Foreign key
-			// console.log("rows ==> ", rows);
-			// console.log("rows[0] ==> ", rows[0]);
 
 			let nameAdded_id = rows[0].customer_id;
 
-			// console.log("rows[0].customer_id ==> ", nameAdded_id);
 
 			let insertAddress = `INSERT INTO address (customer_id,address) VALUES ("${nameAdded_id}", "${address}")`;
 
@@ -128,7 +89,6 @@ app.post("/insert-customers-info", (req, res) => {
 			});
 		}
 	);
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	res.end("Data inserted to tables");
 	console.log("Data inserted to tables");
@@ -147,7 +107,7 @@ app.get("/customers-detail-info", (req, res) => {
 });
 
 // // Tilahun's Question => how to have data from one table in an array form
-app.get("/customers-detail-info-one-table", (req, res) => {
+app.get("/customers-name", (req, res) => {
 	connection.query("SELECT name FROM customers", (err, results, fields) => {
 		if (err) console.log("Error During selection", err);
 		let x = [];
@@ -207,23 +167,6 @@ app.get("/customers/:id", (req, res) => {
 	);
 });
 
-// // The Lazy & wrong way of displaying a single user
-// // Route: /customers/:id => To retrieve single data from the tables using id
-// app.get("/customers/:id", (req, res) => {
-// 	console.log("ID from params", req.params.id);
-// 	connection.query(
-// 		"SELECT customers.customer_id AS ID,customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
-// 		(err, results, fields) => {
-// 			if (err) console.log("Error During selection", err);
-// 			// console.log(results);
-// 			res.send(
-// 				results[req.params.id - 1]
-// 					? results[req.params.id - 1]
-// 					: "Doesn't exist"
-// 			);
-// 		}
-// 	);
-// });
 
 // Route: /update => To adjust or update data from the tables
 app.put("/update", (req, res) => {
@@ -236,31 +179,6 @@ app.put("/update", (req, res) => {
 	});
 });
 
-// // Route: /remove => To delete data from the tables
-// // Manually deleting address
-// // TODO: make it dynamic
-// app.delete("/remove", (req, res) => {
-// 	let removeName = "DELETE FROM address WHERE address = 'MD, USA'";
-// 	connection.query(removeName, (err, result) => {
-// 		if (err) throw err;
-// 		console.log(result.affectedRows + " record(s) Deleted");
-// 		res.send(result);
-// 	});
-// });
-
-// // **** The wrong way to remove user or name ****
-// // Route: /remove-name => To delete data from the tables
-// // Doesn't work (B/c it's used as foreign key on other tables)
-// app.delete("/remove-name", (req, res) => {
-// 	let removeName = "DELETE FROM customers WHERE customer_id = '1'";
-// 	connection.query(removeName, (err, result) => {
-// 		if (err) throw err;
-// 		console.log(result.affectedRows + " record(s) Deleted");
-// 		res.send(result);
-// 	});
-// });
-
-// **** The right way to remove user or name ****
 // Route: /remove-user => To delete all data from the tables
 app.delete("/remove-user", (req, res) => {
 	// console.table(req.body)
