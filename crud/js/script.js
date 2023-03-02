@@ -1,7 +1,8 @@
-function displayForm(show, hideOne, hideTwo) {
+function displayForm(show, hideOne, hideTwo, hideThree) {
 	document.getElementsByClassName(show)[0].style.display = "block";
 	document.getElementsByClassName(hideOne)[0].style.display = "none";
 	document.getElementsByClassName(hideTwo)[0].style.display = "none";
+	document.getElementsByClassName(hideThree)[0].style.display = "none";
 }
 
 function editName(e) {
@@ -24,7 +25,6 @@ document.getElementById("myForm").addEventListener("submit", editName);
 
 function deleteUser(e) {
 	e.preventDefault();
-	alert("User Deleted!");
 	fetch("http://localhost:1234/remove-user", {
 		method: "DELETE",
 		headers: { "content-type": "application/json" },
@@ -39,3 +39,23 @@ function deleteUser(e) {
 }
 
 document.getElementById("delete-user").addEventListener("submit", deleteUser);
+
+function listCustomers() {
+	const usersDiv = document.getElementById("data");
+	usersDiv.innerHTML = "";
+	fetch("http://localhost:1234/customers")
+		.then((res) => res.json())
+		.then((data) => {
+			data.forEach((customer, i) => {
+				usersDiv.innerHTML += `
+				<div class="row">
+					<h2 class="col-2">${i+1}</h2>
+					<h2 class="col-4">${customer.name}</h2>
+					<h2 class="col-3">${customer.address}</h2>
+					<h2 class="col-3">${customer.company}</h2>
+				</div>
+				<hr>`;
+			});
+		});
+}
+document.getElementById("list").addEventListener("click", listCustomers);
