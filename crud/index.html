@@ -18,21 +18,29 @@
 			<button
 				type="button"
 				class="btn btn-success"
-				onclick="displayForm('new', 'edit', 'delete')"
+				onclick="displayForm('new', 'edit', 'delete','list')"
 			>
 				New
 			</button>
 			<button
+				id="list"
+				type="button"
+				class="btn btn-primary"
+				onclick="displayForm('list','new', 'edit', 'delete')"
+			>
+				List
+			</button>
+			<button
 				type="button"
 				class="btn btn-warning"
-				onclick="displayForm('edit', 'new','delete')"
+				onclick="displayForm('edit', 'new','delete','list')"
 			>
 				Edit
 			</button>
 			<button
 				type="button"
 				class="btn btn-danger"
-				onclick="displayForm('delete','edit', 'new')"
+				onclick="displayForm('delete','edit', 'new', 'list')"
 			>
 				Delete
 			</button>
@@ -44,6 +52,7 @@
 				action="http://localhost:1234/insert-customers-info"
 				method="post"
 				style="zoom: 200%"
+				id="newForm"
 			>
 				<label for="name">Name:</label><br />
 				<input type="text" name="name" /><br /><br />
@@ -54,7 +63,9 @@
 				<label for="company">Company:</label><br />
 				<input type="text" name="company" /><br /><br />
 
-				<button type="submit" class="btn btn-dark">Submit Info</button>
+				<button type="submit" class="btn btn-dark" id="newFormBtn">
+					Submit Info
+				</button>
 			</form>
 		</section>
 
@@ -81,7 +92,12 @@
 			</form>
 		</section>
 
-		
+		<section
+			id="data"
+			class="my-3 container list"
+			style="display: none"
+		></section>
+
 		<script src="./js/script.js"></script>
 	</body>
 </html>
