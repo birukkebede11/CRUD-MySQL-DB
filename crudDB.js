@@ -73,7 +73,7 @@ app.post("/insert-customers-info", (req, res) => {
 		`SELECT * FROM customers WHERE name = "${name}"`,
 		(err, rows, fields) => {
 
-			let nameAdded_id = rows[0].customer_id;
+			let nameAdded_id = rows[rows.length-1].customer_id;
 
 
 			let insertAddress = `INSERT INTO address (customer_id,address) VALUES ("${nameAdded_id}", "${address}")`;
@@ -123,7 +123,7 @@ app.get("/customers-name", (req, res) => {
 // Route: /customers => To retrieve customized data from the tables
 app.get("/customers", (req, res) => {
 	connection.query(
-		"SELECT customers.customer_id AS ID,customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
+		"SELECT customers.customer_id AS id,customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
 		(err, results, fields) => {
 			if (err) console.log("Error During selection", err);
 			// console.log(results);
