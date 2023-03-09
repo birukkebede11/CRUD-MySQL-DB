@@ -31,10 +31,8 @@ function deleteUser(e) {
 		body: JSON.stringify({
 			id: document.querySelector("#delete-user input[name=id]").value,
 		}),
-	})
-		.then((response) => response.json())
-		.then(() => alert("User Deleted!"));
-
+	}).then((response) => response.json());
+	alert("User Deleted!");
 	document.getElementById("delete-user").reset();
 }
 
@@ -46,10 +44,10 @@ function listCustomers() {
 	fetch("http://localhost:1234/customers")
 		.then((res) => res.json())
 		.then((data) => {
-			data.forEach((customer, i) => {
+			data.map((customer, i) => {
 				usersDiv.innerHTML += `
 				<div class="row">
-					<h2 class="col-2">${i+1}</h2>
+					<h2 class="col-2">${customer.id}</h2>
 					<h2 class="col-4">${customer.name}</h2>
 					<h2 class="col-3">${customer.address}</h2>
 					<h2 class="col-3">${customer.company}</h2>
