@@ -60,38 +60,31 @@ app.get("/create-table", (req, res) => {
 
 // Route: /insert-customers-info => To insert data to the tables
 app.post("/insert-customers-info", (req, res) => {
+	const { name, address, company } = req.body; // Extracting the values sent from the frontend
 
-	const { name, address, company } = req.body;
-	let insertName = `INSERT INTO customers (name) VALUES ('${name}')`;
+	let insertName = `INSERT INTO customers (name) VALUES (?)`;
+	let insertAddress = `INSERT INTO address (customer_id, address) VALUES (?, ?)`;
+	let insertCompany = `INSERT INTO company (customer_id, company) VALUES (?, ?)`;
 
 	// Executing the query we wrote above
-	connection.query(insertName, (err, result, fields) => {
+	connection.query(insertName, [name], (err, results, fields) => {
 		if (err) console.log(`Error Found: ${err}`);
+		// console.log(results);
+
+		const id = results.insertId;
+		// console.log("id from customers table to be used as a foreign key on the other tables>>> ", id)
+
+		connection.query(insertAddress, [id, address], (err, results, fields) => {
+			if (err) console.log(`Error Found: ${err}`);
+		});
+
+		connection.query(insertCompany, [id, company], (err, results, fields) => {
+			if (err) console.log(`Error Found: ${err}`);
+		});
 	});
 
-	connection.query(
-		`SELECT * FROM customers WHERE name = "${name}"`,
-		(err, rows, fields) => {
-
-			let nameAdded_id = rows[rows.length-1].customer_id;
-
-
-			let insertAddress = `INSERT INTO address (customer_id,address) VALUES ("${nameAdded_id}", "${address}")`;
-
-			let insertCompany = `INSERT INTO company (customer_id,company) VALUES ("${nameAdded_id}", "${company}")`;
-
-			// Executing the query's we wrote above
-			connection.query(insertAddress, (err, result, fields) => {
-				if (err) console.log(`Error Found: ${err}`);
-			});
-			connection.query(insertCompany, (err, result, fields) => {
-				if (err) console.log(`Error Found: ${err}`);
-			});
-		}
-	);
-
-	res.end("Data inserted to tables");
-	console.log("Data inserted to tables");
+	res.end("Data inserted successfully!");
+	console.log("Data inserted successfully!");
 });
 
 // Route: /customers-detail-info => To retrieve data from the tables
@@ -123,7 +116,7 @@ app.get("/customers-name", (req, res) => {
 // Route: /customers => To retrieve customized data from the tables
 app.get("/customers", (req, res) => {
 	connection.query(
-		"SELECT customers.customer_id AS id,customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
+		"SELECT customers.customer_id AS id, customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
 		(err, results, fields) => {
 			if (err) console.log("Error During selection", err);
 			// console.log(results);
@@ -132,29 +125,30 @@ app.get("/customers", (req, res) => {
 	);
 });
 
-// The right way of displaying a single user
-// // Route: /customers/:id => To retrieve single data from the tables using id
+// Route: /customers/:id => To retrieve single data from the tables using id
 app.get("/customers/:id", (req, res) => {
-	// console.log("ID from params", req.params.id);
+	// console.log("id from params", req.params.id);
 
 	connection.query(
-		`SELECT customers.customer_id AS ID,customers.name FROM customers WHERE customers.customer_id = ${req.params.id}`,
+		`SELECT customers.customer_id AS id,customers.name FROM customers WHERE customers.customer_id = ?`,
+		[req.params.id],
 		(err, customerResults, fields) => {
 			if (err) console.log("Error During selection", err);
-			// console.log(results);
 
 			connection.query(
-				`SELECT address.address FROM address WHERE address.customer_id = ${req.params.id}`,
+				`SELECT address.address FROM address WHERE address.customer_id = ?`,
+				[req.params.id],
 				(err, addressResults, fields) => {
 					if (err) console.log("Error During selection", err);
-					// console.log(results);
+
 					connection.query(
-						`SELECT company.company FROM company WHERE company.customer_id = ${req.params.id}`,
+						`SELECT company.company FROM company WHERE company.customer_id = ?`,
+						[req.params.id],
 						(err, companyResults, fields) => {
 							if (err) console.log("Error During selection", err);
-							// console.log(results);
+
 							res.send({
-								id: customerResults[0]?.ID,
+								id: customerResults[0]?.id,
 								name: customerResults[0]?.name,
 								address: addressResults[0]?.address,
 								company: companyResults[0]?.company,
@@ -167,39 +161,37 @@ app.get("/customers/:id", (req, res) => {
 	);
 });
 
-
 // Route: /update => To adjust or update data from the tables
 app.put("/update", (req, res) => {
 	const { newName, id } = req.body;
-	let updateName = `UPDATE customers SET name = '${newName}' WHERE customer_id = '${id}'`;
-	connection.query(updateName, (err, result) => {
+	let updateName = `UPDATE customers SET name = ? WHERE customer_id = ?`;
+	connection.query(updateName, [newName, id], (err, results, fields) => {
 		if (err) throw err;
-		console.log(result.affectedRows + " record(s) updated");
-		res.send(result);
+		console.log(results.affectedRows + " record(s) updated");
+		res.send(results);
 	});
 });
 
 // Route: /remove-user => To delete all data from the tables
 app.delete("/remove-user", (req, res) => {
-	// console.table(req.body)
 	const { id } = req.body;
-	let removeName = `DELETE FROM customers WHERE customer_id = '${id}'`;
-	let removeAddress = `DELETE FROM address WHERE customer_id = '${id}'`;
-	let removeCompany = `DELETE FROM company WHERE customer_id = '${id}'`;
+	let removeName = `DELETE FROM customers WHERE customer_id = ?`;
+	let removeAddress = `DELETE FROM address WHERE customer_id = ?`;
+	let removeCompany = `DELETE FROM company WHERE customer_id = ?`;
 
-	connection.query(removeAddress, (err, result) => {
+	connection.query(removeAddress, [id], (err, results) => {
 		if (err) throw err;
-		console.log(result.affectedRows + " record(s) Deleted");
+		console.log(results.affectedRows + " record(s) Deleted");
 	});
 
-	connection.query(removeCompany, (err, result) => {
+	connection.query(removeCompany, [id], (err, results) => {
 		if (err) throw err;
-		console.log(result.affectedRows + " record(s) Deleted");
+		console.log(results.affectedRows + " record(s) Deleted");
 	});
 
-	connection.query(removeName, (err, result) => {
+	connection.query(removeName, [id], (err, results) => {
 		if (err) throw err;
-		console.log(result.affectedRows + " record(s) Deleted");
+		console.log(results.affectedRows + " record(s) Deleted");
 	});
 });
 
