@@ -90,7 +90,7 @@ app.post("/insert-customers-info", (req, res) => {
 // Route: /customers-detail-info => To retrieve data from the tables
 app.get("/customers-detail-info", (req, res) => {
 	connection.query(
-		"SELECT * FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
+		"SELECT * FROM customers JOIN address JOIN company ON customers.customer_id = address.customer_id AND customers.customer_id = company.customer_id",
 		(err, results, fields) => {
 			if (err) console.log("Error During selection", err);
 			// console.log(results);
@@ -116,7 +116,7 @@ app.get("/customers-name", (req, res) => {
 // Route: /customers => To retrieve customized data from the tables
 app.get("/customers", (req, res) => {
 	connection.query(
-		"SELECT customers.customer_id AS id, customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.address_id AND customers.customer_id = company.company_id",
+		"SELECT customers.customer_id AS id, customers.name, address.address, company.company FROM customers JOIN address JOIN company ON customers.customer_id = address.customer_id AND customers.customer_id = company.customer_id",
 		(err, results, fields) => {
 			if (err) console.log("Error During selection", err);
 			// console.log(results);
