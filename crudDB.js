@@ -26,7 +26,7 @@ const connection = mysql.createConnection({
 // Connect to MySQL
 connection.connect((err) => {
 	if (err) console.log(err);
-	console.log("Connected to MySQL");
+	else console.log("Connected to MySQL");
 });
 
 // Route: / => Homepage route

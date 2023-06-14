@@ -5,6 +5,29 @@ function displayForm(show, hideOne, hideTwo, hideThree) {
 	document.getElementsByClassName(hideThree)[0].style.display = "none";
 }
 
+
+
+function addNew(e) {
+	console.log("inside function")
+	e.preventDefault();
+	fetch("http://localhost:1234/insert-customers-info", {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({
+			name: document.querySelector("#newForm input[name=name]").value,
+			address: document.querySelector("#newForm input[name=address]").value,
+			company: document.querySelector("#newForm input[name=company]").value,
+		}),
+	})
+		.then((response) => response.json())
+		.then(() => alert("Name Updated!"));
+
+	document.getElementById("newForm").reset();
+}
+
+document.getElementById("newForm").addEventListener("submit", addNew);
+
+
 function editName(e) {
 	e.preventDefault();
 	fetch("http://localhost:1234/update", {
