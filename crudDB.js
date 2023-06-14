@@ -127,38 +127,24 @@ app.get("/customers", (req, res) => {
 
 // Route: /customers/:id => To retrieve single data from the tables using id
 app.get("/customers/:id", (req, res) => {
-	// console.log("id from params", req.params.id);
+	const customerId = req.params.id;
 
-	connection.query(
-		`SELECT customers.customer_id AS id,customers.name FROM customers WHERE customers.customer_id = ?`,
-		[req.params.id],
-		(err, customerResults, fields) => {
-			if (err) console.log("Error During selection", err);
+	const query = `SELECT customers.customer_id as id, customers.name, address.address, company.company FROM customers JOIN address ON customers.customer_id = address.customer_id JOIN company ON customers.customer_id = company.customer_id WHERE customers.customer_id = ?`;
 
-			connection.query(
-				`SELECT address.address FROM address WHERE address.customer_id = ?`,
-				[req.params.id],
-				(err, addressResults, fields) => {
-					if (err) console.log("Error During selection", err);
-
-					connection.query(
-						`SELECT company.company FROM company WHERE company.customer_id = ?`,
-						[req.params.id],
-						(err, companyResults, fields) => {
-							if (err) console.log("Error During selection", err);
-
-							res.send({
-								id: customerResults[0]?.id,
-								name: customerResults[0]?.name,
-								address: addressResults[0]?.address,
-								company: companyResults[0]?.company,
-							});
-						}
-					);
-				}
-			);
+	connection.query(query, [customerId], (err, results) => {
+		// console.log(results);
+		if (err) {
+			console.error("Error fetching user data:", err);
+			res.status(500).json({ error: "Failed to fetch user data" });
+		} else {
+			if (results.length === 0) {
+				res.status(404).json({ error: "User not found" });
+			} else {
+				const user = results[0];
+				res.json(user);
+			}
 		}
-	);
+	});
 });
 
 // Route: /update => To adjust or update data from the tables
