@@ -83,7 +83,7 @@ app.post("/insert-customers-info", (req, res) => {
 		});
 	});
 
-	res.end("Data inserted successfully!");
+	res.send({ message: "Data inserted successfully!" });
 	console.log("Data inserted successfully!");
 });
 
@@ -154,7 +154,7 @@ app.put("/update", (req, res) => {
 	connection.query(updateName, [newName, id], (err, results, fields) => {
 		if (err) throw err;
 		console.log(results.affectedRows + " record(s) updated");
-		res.send(results);
+		res.send({ message: "Name updated!" });
 	});
 });
 
@@ -179,6 +179,8 @@ app.delete("/remove-user", (req, res) => {
 		if (err) throw err;
 		console.log(results.affectedRows + " record(s) Deleted");
 	});
+
+	res.send({ message: "Customer info Deleted!" });
 });
 
 const port = 1234;
