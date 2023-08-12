@@ -25,7 +25,8 @@ function addNew(e) {
 	})
 		.then((response) => response.json())
 		.then((data) => {
-			alert(data.message);
+			console.log(data);
+			alert(data.data);
 			displayForm("list", "new", "edit");
 			listCustomers();
 		});
@@ -58,7 +59,7 @@ function edit(id) {
 		})
 			.then((response) => response.json())
 			.then((data) => {
-				alert(data.message);
+				alert(data.data);
 				displayForm("list", "new", "edit");
 				listCustomers();
 			});
@@ -76,7 +77,7 @@ function deleteUser(id) {
 	})
 		.then((response) => response.json())
 		.then((data) => {
-			alert(data.message);
+			alert(data.data);
 			listCustomers();
 		});
 }
@@ -88,7 +89,7 @@ function listCustomers() {
 	fetch("http://localhost:1234/customers")
 		.then((res) => res.json())
 		.then((data) => {
-			data.map((customer) => {
+			data.data.map((customer) => {
 				const { id, name, address, company } = customer;
 
 				const rowElement = document.createElement("div");

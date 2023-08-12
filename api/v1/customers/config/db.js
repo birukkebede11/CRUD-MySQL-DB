@@ -1,11 +1,11 @@
 const mysql = require("mysql2");
 
 const connection = mysql.createConnection({
-	host: "localhost",
-	user: "test1",
-	password: "test1",
-	database: "test1",
-	socketPath: "/Applications/MAMP/tmp/mysql/mysql.sock", //path to mysql sock in MAMP
+	host: process.env.host,
+	user: process.env.user,
+	password: process.env.password,
+	database: process.env.database,
+	socketPath: process.env.socketPath,
 });
 
 connection.connect((err) => {
